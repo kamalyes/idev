@@ -1,0 +1,50 @@
+version: "3"
+services:
+  mysql:
+    build:
+      context: "./${MYSQL}"
+    container_name: '${PROJECT_NAME}-${MYSQL}'
+    restart: 'always'
+    ports:
+      - "${MYSQL_DB_PORT}:3306"
+    volumes:
+      - ${MYSQL_INITDB_DIR}:/docker-entrypoint-initdb.d
+      - ${MYSQL_DATA_DIR}:/var/lib/mysql
+      - ${MYSQL_LOG_DIR}:/var/log/mysql
+#      - ${MYSQL_CONF}:/etc/mysql/my.cnf
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    networks:
+      - mysql
+
+
+
+  phpmyadmin:
+    build:
+      context: "./phpmyadmin"
+    container_name: '${PROJECT_NAME}-phpmyadmin'
+    environment:
+      PMA_HOST: ${HOST_IP}
+      PMA_PORT: ${MYSQL_DB_PORT}
+      PMA_USER: root
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      UPLOAD_LIMIT: ${UPLOAD_LIMIT}
+      MEMORY_LIMIT: ${MEMORY_LIMIT}
+    ports:
+      - '${PHP_MY_ADMIN_PORT}:80'
+    volumes: 
+      - /sessions
+      - ${PMA_PHP_INI}:/usr/local/etc/php/conf.d/php-phpmyadmin.ini
+    networks:
+      - mysql
+
+
+networks:
+  mysql:
+    driver: bridge
