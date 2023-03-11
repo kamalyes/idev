@@ -1,0 +1,18 @@
+{
+  "editor.insertSpaces": true,
+  "editor.tabSize": 2,
+  "files.encoding": "utf8",
+  "python.formatting.provider": "black",
+  "editor.formatOnSave": true,
+  "files.eol": "\n",
+  "files.trimFinalNewlines": true,
+  "java.compile.nullAnalysis.mode": "automatic",
+  "files.trimTrailingWhitespace": true,
+  "[markdown]": {
+    "files.trimTrailingWhitespace": false
+  },
+  "python.terminal.executeInFileDir": true,
+  "terminal.integrated.env.osx": {
+    "PYTHONPATH": "${workspaceFolder}"
+  }
+}

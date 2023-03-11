@@ -1,0 +1,41 @@
+version: '3'
+services:
+  web:
+    container_name: '${PROJECT_NAME}-web'
+    image: nginx
+    volumes:
+      - ./php/conf/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ${DOCUMENT_ROOT}:/var/www/html
+      - ${LOG_DIR}:/var/log/nginx
+
+    ports:
+      - ${HOST_PORT}:80
+    restart: always
+    depends_on:
+      - php
+    networks:
+      - nginxphp
+
+  php:
+    container_name: '${PROJECT_NAME}-php'
+    build: app/php
+    restart: always
+    volumes:
+      - ./php/conf/php/php.ini:/usr/local/etc/php/conf.d/php.ini
+      - ./php/conf/php/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+      - ${DOCUMENT_ROOT}:/var/www/html
+    networks:
+      - nginxphp
+
+  composer:
+    container_name: '${PROJECT_NAME}-composer'
+    image: composer
+    volumes:
+      - .:/app
+    command: install
+    networks:
+      - nginxphp
+
+networks:
+  nginxphp:
+    driver: bridge

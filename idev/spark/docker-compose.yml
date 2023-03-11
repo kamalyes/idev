@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  master:
+    image: sequenceiq/spark:1.6.0
+    hostname: master
+    ports:
+      - "4040:4040"
+      - "8042:8042"
+      - "7077:7077"
+      - "8088:8088"
+      - "8080:8080"
+    restart: always
+    command: bash /usr/local/spark/sbin/start-master.sh && ping localhost > /dev/null
+
+  worker:
+    image: sequenceiq/spark:1.6.0
+    depends_on:
+      - master
+    expose:
+      - "8081"
+    restart: always
+    command: bash /usr/local/spark/sbin/start-slave.sh spark://master:7077 && ping localhost >/dev/null

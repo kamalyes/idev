@@ -1,0 +1,61 @@
+<settings>
+  <servers>
+    <server>
+        <id>nexus-releases</id>
+        <username>deployment</username>
+        <password>looeasy</password>
+    </server>
+    <server>
+        <id>nexus-snapshots</id>
+        <username>deployment</username>
+        <password>looeasy</password>
+    </server>
+  </servers>
+  <mirrors>
+        <mirror>
+            <id>nexus-aliyun</id>
+            <mirrorOf>central</mirrorOf>
+            <name>Nexus aliyun</name>
+            <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+        </mirror>
+    </mirrors>
+<profiles>
+ <profile>
+            <id>dev</id>
+
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <jdk>1.8</jdk>
+            </activation>
+            <repositories>
+                <repository>
+                    <id>spring-milestone</id>
+                    <name>Spring Milestone Repository</name>
+                    <url>http://repo.spring.io/milestone</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                    <layout>default</layout>
+                </repository>
+                <repository>
+                    <id>spring-snapshot</id>
+                    <name>Spring Snapshot Repository</name>
+                    <url>http://repo.spring.io/snapshot</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                    <layout>default</layout>
+                </repository>
+            </repositories>
+        </profile>
+</profiles>
+<activeProfiles>
+    <activeProfile>dev</activeProfile>
+</activeProfiles>
+</settings>

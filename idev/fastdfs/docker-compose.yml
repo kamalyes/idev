@@ -1,0 +1,32 @@
+version: '3'
+services:
+    fastdfs-tracker:
+        hostname: fastdfs-tracker
+        container_name: '${PROJECT_NAME}-fastdfs-tracker'
+        image: season/fastdfs:1.2
+        command: tracker
+        ports:
+          - "${FASTDFS_PORT}:22122"
+        volumes:
+          - ./tracker_data:/fastdfs/tracker/data
+    fastdfs-storage:
+        hostname: fastdfs-storage
+        container_name: fastdfs-storage
+        image: season/fastdfs:1.2
+        volumes:
+          - ./storage_data:/fastdfs/storage/data
+          - ./store_path:/fastdfs/store_path
+        environment:
+          - TRACKER_SERVER=${HOST_IP}:22122
+        command: storage
+        depends_on:
+          - fastdfs-tracker
+    fastdfs-nginx:
+        container_name: fastdfs-nginx
+        image: season/fastdfs:1.2
+        volumes:
+          - ./nginx.conf:/etc/nginx/conf/nginx.conf
+          - ./store_path:/fastdfs/store_path
+        environment:
+          - TRACKER_SERVER=${HOST_IP}:22122
+        command: nginx

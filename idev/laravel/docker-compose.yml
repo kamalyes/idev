@@ -1,0 +1,46 @@
+version: '3'
+services:
+#  cli:
+#    image: "ccq18/php-cli:7.1-v2"
+#    volumes:
+#      - ${APPLICATION}:/www
+#    networks:
+#      - frontend
+  fpm:
+    build: fpm
+    volumes:
+      - ${APPLICATION}:/www
+    networks:
+      - frontend
+  nginx:
+    image: "ccq18/nginx:v2"
+    ports:
+      - "${PORT}:80"
+    volumes:
+      - ${APPLICATION}:/www
+      - ${APPLICATION}/storage/logs:/log/nginx
+    networks:
+      - frontend
+    depends_on:
+      - fpm
+  cron:
+    build: cron
+    volumes:
+      - ${APPLICATION}:/www
+    networks:
+      - frontend
+  supervisor:
+    build: supervisor
+    volumes:
+      - ${APPLICATION}:/www
+      - ${APPLICATION}/storage/logs:/var/log
+    networks:
+      - frontend
+
+networks:
+  frontend:
+    driver: "bridge"
+#  backend:
+#    driver: "bridge"
+
+

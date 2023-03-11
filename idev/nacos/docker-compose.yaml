@@ -1,0 +1,15 @@
+version: "2"
+services:
+  nacos:
+    image: nacos/nacos-server:${NACOS_VERSION}
+    container_name: nacos-standalone-mysql
+    env_file:
+      - .env
+    volumes:
+      - ./log/:/home/nacos/logs
+      - ./init.d/custom.properties:/home/nacos/init.d/custom.properties
+    ports:
+      - "${NACOS_ADMIN_PORT}:8848"
+      - "${NACOS_RPC_PORT}:9848"
+      - "${NACOS_SERVICE_PORT}:9555"
+    restart: on-failure

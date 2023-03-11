@@ -1,0 +1,48 @@
+version: '3'
+services:
+  rmqnamesrv:
+    image: foxiswho/rocketmq:server
+    container_name: '${PROJECT_NAME}-rmqnamesrv'
+    ports:
+      - 9876:9876
+    volumes:
+      - ./logs:/opt/logs
+      - ./store:/opt/store
+    networks:
+      - rocketmq
+
+  rmqbroker:
+    image: foxiswho/rocketmq:broker
+    container_name: '${PROJECT_NAME}-rmqbroker'
+    ports:
+      - 10909:10909
+      - 10911:10911
+    volumes:
+      - ./logs:/opt/logs
+      - ./store:/opt/store
+      - ./conf/broker.conf:/etc/rocketmq/broker.conf
+    environment:
+      NAMESRV_ADDR: "rmqnamesrv:9876"
+      JAVA_OPTS: " -Duser.home=/opt"
+      JAVA_OPT_EXT: "-server -Xms128m -Xmx128m -Xmn128m"
+    command: mqbroker -c /etc/rocketmq/broker.conf
+    depends_on:
+      - rmqnamesrv
+    networks:
+      - rocketmq
+
+  rmqconsole:
+    image: styletang/rocketmq-console-ng
+    container_name: '${PROJECT_NAME}-rmqconsole'
+    ports:
+      - 9904:8080
+    environment:
+      JAVA_OPTS: "-Drocketmq.namesrv.addr=rmqnamesrv:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false"
+    depends_on:
+      - rmqnamesrv
+    networks:
+      - rocketmq
+
+networks:
+  rocketmq:
+    driver: bridge

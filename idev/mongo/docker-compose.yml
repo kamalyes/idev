@@ -1,0 +1,18 @@
+version: "3"
+services:
+  mongo:
+    container_name: '${PROJECT_NAME}-mongo'
+    image: mongo:5.0.6
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_DB_PASSWORD}
+    ports:
+      - ${MONGO_DB_PORT}:27017
+    volumes:
+      - ./mongo/data:/data/db
+    networks:
+      - mongo
+networks:
+  mongo:
+    driver: bridge

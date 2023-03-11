@@ -1,0 +1,61 @@
+version: '3'
+
+services:
+  apollo-configservice:
+    container_name: '${PROJECT_NAME}-apollo-configservice'
+    image: apolloconfig/apollo-configservice:1.9.1
+    volumes:
+      - ./logs:/opt/logs
+    ports:
+      - "${APOLLO_CONFIG_PORT}:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://${APOLLO_DB_HOST}:${APOLLO_DB_PORT}/${APOLLO_CONFIG_DB_NAME}?characterEncoding=utf8
+      - SPRING_DATASOURCE_USERNAME=${APOLLO_DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${APOLLO_DB_PASSWORD}
+      - EUREKA_INSTANCE_HOME_PAGE_URL=http://${HOSTIP}:${CONFIG_PORT}
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+    restart: always
+    networks:
+      - apollo
+  apollo-adminservice:
+    depends_on:
+      - apollo-configservice
+    container_name: '${PROJECT_NAME}-apollo-adminservice'
+    image: apolloconfig/apollo-adminservice:1.9.1
+    volumes:
+      - ./logs:/opt/logs
+    ports:
+      - "${APOLLO_ADMIN_PORT}:8090"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://${APOLLO_DB_HOST}:${APOLLO_DB_PORT}/${APOLLO_CONFIG_DB_NAME}?characterEncoding=utf8
+      - SPRING_DATASOURCE_USERNAME=${APOLLO_DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${APOLLO_DB_PASSWORD}
+      - EUREKA_INSTANCE_HOME_PAGE_URL=http://${HOSTIP}:${ADMIN_PORT}
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+    restart: always
+    networks:
+      - apollo
+  apollo-portal:
+    depends_on:
+      - apollo-adminservice
+    container_name: '${PROJECT_NAME}-apollo-portal'
+    image: apolloconfig/apollo-portal:1.9.1
+    volumes:
+      - ./logs:/opt/logs
+    ports:
+      - "${APOLLO_PORTAL_PORT}:8070"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://${APOLLO_DB_HOST}:${APOLLO_DB_PORT}/${APOLLO_PORTAL_DB_NAME}?characterEncoding=utf8
+      - SPRING_DATASOURCE_USERNAME=${APOLLO_DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${APOLLO_DB_PASSWORD}
+      - APOLLO_PORTAL_ENVS=dev
+      - DEV_META=${DEV_META}
+      - EUREKA_INSTANCE_HOME_PAGE_URL=http://${HOSTIP}:${PORTAL_PORT}
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+
+    restart: always
+    networks:
+      - apollo
+networks:
+  apollo:
+    driver: bridge
