@@ -77,7 +77,7 @@ function main() {
     restart
     ;;
   install)
-    uninstall
+    install
     ;;
   help)
     usage

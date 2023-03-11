@@ -83,8 +83,13 @@ export HOST_IP=$(ifconfig|grep -A 5 docker0|grep netmask|awk '{print $2}')
 3. 启动  可以去各个目录下执行 docker-compose up -d，也可以使用以下脚本一键启动所有容器（除应用环境容器java，php等），建议根据自己需要修改
 
 ```bash
-为了避免权限问题 先初始化权限
-chmod -R 777 ./ & sh idev.sh install
+yuyq@DESKTOP-SBVLBT5 MINGW64 /e/WorkSpaces/DockerProjects/idev(master)
+$ cd idev && chmod -R 777 ./ && sh idev.sh install
+Network mongo_mongo  Creating
+Network mongo_mongo  Created
+Container idev-mongo  Creating
+Container idev-mongo  Created
+Container idev-mongo  Starting
 ```
 
 # server
