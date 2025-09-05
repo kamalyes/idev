@@ -1,0 +1,24 @@
+version: "3"
+services:
+  mysql8:
+    image: ${IDEV_IMAGE_PREFIX}/mysql:8.0.28
+    restart: unless-stopped  # 更改为 unless-stopped 以避免不必要的重启
+    container_name: ${IDEV_CONTAINER_NAME_PREFIX}-mysql8
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s  # 增加间隔时间，避免频繁检查
+      timeout: 5s
+      retries: 5  # 减少重试次数，避免过长的健康检查时间
+    environment:
+      MYSQL_DATABASE: ${INIT_MYSQL_DB}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}  # 添加普通用户
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}  # 添加普通用户密码
+      TZ: "${IDEV_TZ}"  # 设置时区
+    ports:
+      - "${MYSQL_PORT}:3306"  # 确保使用引号以处理环境变量
+    volumes:
+      - ./mysql8/conf/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./mysql8/data:/var/lib/mysql
+    networks:
+      - idev-network  # 使用自定义网络

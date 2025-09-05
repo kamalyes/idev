@@ -1,0 +1,35 @@
+version: '3.1'
+services:
+ jenkins:
+  user: root
+  restart: always
+  privileged: true
+  image: ${IDEV_IMAGE_PREFIX}/jenkins:2.426.2-lts-jdk11-slim
+  container_name: ${IDEV_CONTAINER_NAME_PREFIX}-jenkins
+  healthcheck:
+    # test: ["CMD", "curl", "-f", "http://localhost:8080"]
+    test: ["CMD", "nc", "-z", "localhost", "8080"]
+    interval: 6s
+    timeout: 5s
+    retries: 10
+  environment:
+   TZ: "${IDEV_TZ}"  # 设置时区
+   JAVA_OPTS: '-Djenkins.install.runSetupWizard=false -Djava.util.logging.config.file=/var/jenkins_home/log.properties'
+  volumes:
+   - /root/.ssh:/root/.ssh
+   - ./jenkins:/var/jenkins_home
+   - ./jenkins/workspace/:/root/.jenkins/workspace
+   - /var/run/docker.sock:/var/run/docker.sock
+   - /usr/bin/docker:/usr/bin/docker
+   - /usr/local/go:/usr/local/go
+   - /usr/lib/x86_64-linux-gnu/libltdl.so.7:/usr/lib/x86_64-linux-gnu/libltdl.so.7
+   - /usr/local/gradle-7.3.3:/usr/local/gradle-7.3.3
+   - /usr/local/gradle-7.6:/usr/local/gradle-7.6
+   - /usr/local/jdk11.0.1:/usr/local/jdk11.0.1
+   - /usr/local/jdk1.8.0_141:/usr/local/jdk1.8.0_141
+   - /usr/local/node-v16.19.1-linux-x64:/usr/local/node-v16.19.1-linux-x64
+   - /usr/local/python3:/usr/local/python3
+   - /usr/local/android-sdk-linux:/usr/local/android-sdk-linux
+  ports:
+   - '${JENKINS_PORT}:8080'
+   - '${JENKINS_JNLP_PORT}:50000'

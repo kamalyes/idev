@@ -1,0 +1,34 @@
+version: "3"
+services:
+  zentao:
+    image: ${IDEV_IMAGE_PREFIX}/easysoft-zentao:12.4.3
+    container_name: ${IDEV_CONTAINER_NAME_PREFIX}-zentao
+    restart: always
+    healthcheck:
+     test: ["CMD", "curl", "-f", "http://localhost:80"]
+     interval: 6s
+     timeout: 5s
+     retries: 10
+    ports:
+      - '${ZT_PORT}:80'
+    volumes:
+      - './zentao/zentaopms:/www/zentaopms'
+      - './zentao/mysqldata:/var/lib/mysql' # 若不是使用本地无所谓
+    environment:
+      - TZ=${IDEV_TZ}  # 设置时区
+      - ZT_MYSQL_HOST=${ZT_MYSQL_HOST}
+      - ZT_MYSQL_PORT=${ZT_MYSQL_PORT}
+      - ZT_MYSQL_USER=${ZT_MYSQL_USER}
+      - ZT_MYSQL_PASSWORD=${ZT_MYSQL_PASSWORD}
+      - ZT_MYSQL_DB=${ZT_MYSQL_DB}
+      - PHP_MAX_EXECUTION_TIME=${ZT_PHP_MAX_EXECUTION_TIME}
+      - PHP_MEMORY_LIMIT=${ZT_PHP_MEMORY_LIMIT}
+      - PHP_POST_MAX_SIZE=${ZT_PHP_POST_MAX_SIZE}
+      - PHP_UPLOAD_MAX_FILESIZE=${ZT_PHP_UPLOAD_MAX_FILESIZE}
+      - APP_DEFAULT_PORT=${ZT_APP_DEFAULT_PORT}
+      - APP_DOMAIN=${ZT_APP_DOMAIN}
+      - PROTOCOL_TYPE=${ZT_PROTOCOL_TYPE}
+      - EASYSOFT_DEBUG=${ZT_EASYSOFT_DEBUG}
+      - DEBUG=${ZT_DEBUG}
+    networks:
+      - idev-network  # 使用自定义网络

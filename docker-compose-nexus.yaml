@@ -1,0 +1,20 @@
+version: '3.0'
+services:
+  nexus:
+    restart: always
+    image: ${IDEV_IMAGE_PREFIX}/sonatype-nexus3:3.64.0
+    container_name: ${IDEV_CONTAINER_NAME_PREFIX}-nexus3
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081"]
+      interval: 6s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - ./nexus/data:/nexus-data
+    ports:
+      - "${NEXUS_PORT}:8081"
+      - "16000:6000"
+      - "16001:6001"
+    environment:
+      - "INSTALL4J_ADD_VM_PARAMS=-Xms128m -Xmx512m -XX:MaxDirectMemorySize=512m -Djava.util.prefs.userRoot=/nexus-data/javaprefs"
+      - TZ=${IDEV_TZ}

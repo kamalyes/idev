@@ -1,0 +1,20 @@
+version: "3"
+services:
+  mongo:
+    image: ${IDEV_IMAGE_PREFIX}/mongo:5.0.6
+    container_name: ${IDEV_CONTAINER_NAME_PREFIX}-mongo
+    restart: always
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_DB_PASSWORD}
+    ports:
+      - ${MONGO_DB_PORT}:27017
+    volumes:
+      - ./mongo/data:/data/db
+    networks:
+      - idev-network  # 使用自定义网络

@@ -1,0 +1,32 @@
+version: "3"
+services:
+  kafka:
+    image: '${IDEV_IMAGE_PREFIX}/apache-kafka:3.9.1'
+    container_name: ${IDEV_CONTAINER_NAME_PREFIX}-kafka
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: ${KAFKA_MEM_LIMIT}
+    ports:
+      - '${KAFKA_PORT}:9092'
+    healthcheck:
+      test: [ "CMD", "bash", "-c", "< /dev/tcp/localhost/9092" ]
+      interval: 6s
+      timeout: 10s
+      retries: 50
+    volumes:
+      - ./kafka/conf:/mnt/shared/config
+    environment:
+      # Environment variables used by kafka scripts will be needed in case of File input.
+      CLUSTER_ID: '4L6g3nShT-eMCtK--X86sw'
+      # Set properties not provided in the file input
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      KAFKA_LISTENERS: 'CONTROLLER://:29093,PLAINTEXT_HOST://:9092,PLAINTEXT://:19092'
+      # Override an existing property
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT_HOST://${KAFKA_HOST}:${KAFKA_PORT},PLAINTEXT://kafka:19092'
+      TZ: "${IDEV_TZ}"  # 设置时区
+    networks:
+      - idev-network  # 使用自定义网络

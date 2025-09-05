@@ -1,0 +1,23 @@
+version: "3"
+
+services:
+  redis:
+    image: ${IDEV_IMAGE_PREFIX}/redis:7.2.7-alpine
+    container_name: ${IDEV_CONTAINER_NAME_PREFIX}-redis
+    restart: unless-stopped  # 使用 unless-stopped 来避免不必要的重启
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s  # 增加间隔时间以减少负载
+      timeout: 5s
+      retries: 3  # 减少重试次数
+    environment:
+      TZ: "${IDEV_TZ}"  # 设置时区
+      REDIS_PASSWORD: ${REDIS_PASSWORD}  # 确保密码在环境变量中定义
+    ports:
+      - "${REDIS_PORT}:6379"  # 使用引号处理环境变量
+    volumes:
+      - ./redis/conf/redis.conf:/etc/redis/redis.conf
+      - ./redis/data:/data
+    command: redis-server /etc/redis/redis.conf --requirepass ${REDIS_PASSWORD}
+    networks:
+      - idev-network  # 使用自定义网络

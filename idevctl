@@ -1,0 +1,154 @@
+#!/usr/bin/env bash
+source ./common.sh
+
+action=$1
+target=$2
+args=$@
+
+source ~/.idevrc >/dev/null
+COMPOSE_FILES=$(cat $IDEV_COMPOSE_FILES_PATH 2>/dev/null || echo "")
+
+function usage() {
+  echo "Idev 控制脚本"
+  echo
+  echo "Usage: "
+  echo "  idevctl [COMMAND] [ARGS...]"
+  echo "  idevctl --help"
+  echo
+  echo "Commands: "
+  echo "  status    查看 Idev 服务运行状态"
+  echo "  start     启动 Idev 服务"
+  echo "  stop      停止 Idev 服务"
+  echo "  restart   重启 Idev 服务"
+  echo "  reload    重新加载 Idev 服务"
+  echo "  uninstall 卸载 Idev 服务"
+}
+
+function generate_compose_files() {
+  # 初始化 Compose 文件数组，包含基本的 Compose 文件
+  compose_files=("-f" "docker-compose-base.yaml")
+  
+  # 定义服务名称
+  services=("minio" "kafka" "mysql5" "mysql8" "redis" "zentao" "mongo" "jenkins")
+  
+  # 自动生成服务文件数组
+  service_files=()
+  for service in "${services[@]}"; do
+    service_files+=("-f docker-compose-${service}.yaml")
+  done
+
+  # 根据安装模式确定要使用的 Compose 文件
+  case "$IDEV_INSTALL_MODE" in
+    allinone)
+      # 如果是 allinone 模式，添加所有服务的 Compose 文件
+      compose_files+=("${service_files[@]}")
+      ;;
+    minio | kafka | mysql5 | mysql8 | redis | zentao | mongo | jenkins)
+      # 对于单独的服务模式，直接添加对应的 Compose 文件
+      compose_files+=("-f docker-compose-$IDEV_INSTALL_MODE.yaml")
+      ;;
+    *)
+      # 如果安装模式不支持，输出错误日志并返回错误码
+      log "... 不支持的安装模式，请从 [ allinone | minio | kafka | mysql5 | mysql8 | redis | zentao | mongo | jenkins ] 中进行选择"
+      return 1
+      ;;
+  esac
+
+  # 定义不需要更改权限的服务
+  excluded_services=("zentao" "jenkins")
+
+  # 设置每个服务配置目录的权限
+  for service in "${services[@]}"; do
+    if [[ ! " ${excluded_services[@]} " =~ " ${service} " ]]; then
+      run_command "chmod +rw -R '$IDEV_BASE/${service}/conf'"
+    elif [[ "$service" == "zentao" ]]; then
+      # 对于 zentao，设置特定的 a 和 b 文件夹权限
+      run_command "chmod +rw -R '$IDEV_BASE/zentao/mysqldata'"
+      run_command "chmod 777 -R '$IDEV_BASE/zentao/zentaopms'"
+    elif [[ "$service" == "jenkins" ]]; then
+      # 对于 jenkins，设置 workspaces 文件夹权限
+      run_command "chmod 777 -R '$IDEV_BASE/jenkins'"
+      run_command "chmod +rw -R '$IDEV_BASE/jenkins/workspace'"
+    fi
+  done
+
+  # 将 Compose 文件列表写入输出文件
+  printf "%s " "${compose_files[@]}" > "$IDEV_COMPOSE_FILES_PATH"
+  
+  # 设置所有 YAML 文件的权限
+  run_command "chmod +rw -R "$IDEV_BASE"/*.yaml"
+
+  # 读取生成的 Compose 文件列表
+  COMPOSE_FILES=$(cat "$IDEV_COMPOSE_FILES_PATH" 2>/dev/null || echo "")
+}
+
+function status() {
+  run_command "cd $IDEV_BASE"
+  run_command "docker-compose $COMPOSE_FILES ps"
+}
+
+function start() {
+  run_command "cd $IDEV_BASE"
+  run_command "docker-compose $COMPOSE_FILES start ${target}"
+}
+
+function stop() {
+  run_command "cd $IDEV_BASE"
+  run_command "docker-compose $COMPOSE_FILES stop ${target}"
+}
+
+function restart() {
+  run_command "cd $IDEV_BASE"
+  run_command "docker-compose $COMPOSE_FILES stop ${target} && docker-compose $COMPOSE_FILES start ${target}"
+}
+
+function reload() {
+  run_command "cd $IDEV_BASE"
+  run_command "docker-compose $COMPOSE_FILES up -d --remove-orphans"
+}
+
+function uninstall() {
+  run_command "cd $IDEV_BASE"
+  run_command "docker-compose $COMPOSE_FILES down ${target}"
+  run_command "rm -f $IDEVRC_PATH"
+  run_command "rm -f $IDEVCTL_BIN_PATH"
+}
+
+function main() {
+  case "${action}" in
+  status)
+    status
+    ;;
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    restart
+    ;;
+  reload)
+    generate_compose_files
+    reload
+    ;;
+  uninstall)
+    uninstall
+    ;;
+  help)
+    usage
+    ;;
+  --help)
+    usage
+    ;;
+  generate_compose_files)
+    generate_compose_files
+    ;;
+  *)
+    run_command "cd $IDEV_BASE"
+    run_command "docker-compose $COMPOSE_FILES $@"
+    ;;
+  esac
+}
+
+main $@

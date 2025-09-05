@@ -1,0 +1,25 @@
+version: "3"
+services:
+  nacos:
+    image: ${IDEV_IMAGE_PREFIX}/nacos-server:v3.0.3
+    container_name: ${IDEV_CONTAINER_NAME_PREFIX}-nacos
+    restart: on-failure
+    environment:
+      - MODE=${NACOS_MODE}
+      # 配置的持久化
+      - SPRING_DATASOURCE_PLATFORM=${NACOS_SPRING_DATASOURCE_PLATFORM} # 默认定义使用的数据库是 mysql
+      - MYSQL_SERVICE_HOST=${NACOS_MYSQL_SERVICE_HOST}
+      - MYSQL_SERVICE_PORT=${NACOS_MYSQL_SERVICE_PORT}
+      - MYSQL_SERVICE_USER=${NACOS_MYSQL_SERVICE_USER}
+      - MYSQL_SERVICE_PASSWORD=${NACOS_MYSQL_SERVICE_PASSWORD}
+      - MYSQL_SERVICE_DB_NAME=${NACOS_MYSQL_SERVICE_DB_NAME}
+    volumes:
+      - ./nacos/log/:/home/nacos/logs
+      - ./init.d/custom.properties:/home/nacos/init.d/custom.properties
+    ports:
+      - "${NACOS_ADMIN_PORT}:8848"
+      - "${NACOS_RPC_PORT}:9848"
+      - "${NACOS_SERVICE_PORT}:9555"
+
+    networks:
+      - idev-network  # 使用自定义网络

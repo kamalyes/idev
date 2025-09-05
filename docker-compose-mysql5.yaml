@@ -1,0 +1,25 @@
+version: "3"
+services:  # 定义服务
+  mysql5:  # 服务名称
+    image: ${IDEV_IMAGE_PREFIX}/mysql:5.7.33  # 使用的 MySQL 镜像
+    container_name: ${IDEV_CONTAINER_NAME_PREFIX}-mysql5  # 容器名称
+    restart: always  # 设置容器重启策略，确保容器在失败后自动重启
+    healthcheck:  # 健康检查配置
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_PASSWORD}"]  # 检查 MySQL 是否可用
+      interval: 6s  # 检查间隔时间
+      timeout: 5s  # 超时时间
+      retries: 10  # 重试次数
+    environment:  # 环境变量配置
+      MYSQL_DATABASE: ${INIT_MYSQL_DB}  # 初始化数据库名称
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}  # root 用户的密码
+      MYSQL_USER: ${MYSQL_USER}  # 普通用户的名称
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}  # 普通用户的密码
+      TZ: "${IDEV_TZ}"  # 设置时区
+    ports:  # 端口映射
+      - ${MYSQL_PORT}:3306  # 将主机的 MYSQL_PORT 映射到容器的 3306 端口
+    volumes:  # 持久化数据和配置文件
+      - ./mysql5/conf/my.cnf:/etc/mysql/conf.d/my.cnf  # 挂载自定义配置文件
+      - ./mysql5/bin/mysql:/docker-entrypoint-initdb.d/  # 初始化数据库脚本
+      - ./mysql5/data:/var/lib/mysql  # 持久化 MySQL 数据
+    networks:
+      - idev-network  # 使用自定义网络

@@ -1,0 +1,29 @@
+version: '3'
+services:
+  sonar:
+    image: ${IDEV_IMAGE_PREFIX}/sonarqube:9.9-community
+    container_name: ${IDEV_CONTAINER_NAME_PREFIX}-sonar
+    restart: always
+    privileged: true
+    healthcheck:
+     test: ["CMD", "curl", "-f", "http://localhost:9090"]
+     interval: 6s
+     timeout: 5s
+     retries: 10
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./sonarqube/logs:/opt/sonarqube/logs
+      - ./sonarqube/conf:/opt/sonarqube/conf
+      - ./sonarqube/data:/opt/sonarqube/data
+      - ./sonarqube/extensions:/opt/sonarqube/extensions
+    ports:
+      - "${SONARQUBE_PORT}:9000"
+    environment:
+      TZ: ${IDEV_TZ}
+      ALLOW_EMPTY_PASSWORD: ${SONARQUBE_ALLOW_EMPTY_PASSWORD}
+      SONARQUBE_JDBC_USERNAME: ${SONARQUBE_JDBC_USERNAME}
+      SONARQUBE_JDBC_PASSWORD: ${SONARQUBE_JDBC_PASSWORD}
+      SONARQUBE_JDBC_URL: ${SONARQUBE_JDBC_URL}
+
+    networks:
+      - idev-network  # 使用自定义网络
