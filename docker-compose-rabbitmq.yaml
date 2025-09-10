@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   rabbitmq:
-    image: ${IDEV_IMAGE_PREFIX}/rabbitmq:3-management # 使用带有管理界面的RabbitMQ镜像
+    image: ${IDEV_IMAGE_PREFIX}/rabbitmq:3.13.7-management # 使用带有管理界面的RabbitMQ镜像
     container_name: ${IDEV_CONTAINER_NAME_PREFIX}-rabbitmq
     restart: always
     privileged: true
@@ -18,9 +18,11 @@ services:
       RABBITMQ_ERLANG_COOKIE: '${RABBITMQ_ERLANG_COOKIE}'  # 使用强随机字符串
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}  # 默认用户名
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}  # 默认密码
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_DEFAULT_VHOST}  # 默认虚拟主机
       TZ: 'Asia/Shanghai'  # 设置时区
     volumes:
       - ./rabbitmq/data:/var/lib/rabbitmq  # 数据卷，用于持久化数据
+      - ./rabbitmq/logs:/var/log/rabbitmq  # 持久化日志
 
     networks:
       - idev-network  # 使用自定义网络
